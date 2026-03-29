@@ -1,0 +1,21 @@
+# Environnement virtuel
+.venv/
+env/
+venv/
+
+# Configuration IDE (PyCharm/VSCode)
+.idea/
+.vscode/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Données (Ne pas uploader les fichiers Zindi sur un repo public)
+data/
+ZINDIDONNEES/
+*.csv
+*.sqlite
+
+# Divers
+.DS_Store
