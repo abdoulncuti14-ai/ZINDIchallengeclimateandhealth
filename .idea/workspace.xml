@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6d04f50-a857-4282-8fdb-9471768f9674" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/ZINDICLIMATE.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="f6d04f50-a857-4282-8fdb-9471768f9674" name="Changes" comment="this our first AI for EAC Challenge and our work was about to create model of prediction about climate and health challenge" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,6 +38,12 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "git-widget-placeholder": "master",
     "last_opened_file_path": "C:/Users/ABDOUL/Desktop/ZINDICLIMATE"
+  },
+  "keyToStringList": {
+    "ChangesTree.GroupingKeys": [
+      "directory",
+      "repository"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -66,6 +66,30 @@
       <option name="presentableId" value="Default" />
       <updated>1774683998745</updated>
     </task>
+    <task id="LOCAL-00001" summary="this our first AI for EAC Challenge and our work was about to create model of prediction about climate and health challenge">
+      <option name="closed" value="true" />
+      <created>1774792689893</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1774792689893</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="this our first AI for EAC Challenge and our work was about to create model of prediction about climate and health challenge" />
+    <option name="LAST_COMMIT_MESSAGE" value="this our first AI for EAC Challenge and our work was about to create model of prediction about climate and health challenge" />
   </component>
 </project>
