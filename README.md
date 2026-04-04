@@ -1,7 +1,7 @@
 # 🌍 Zindi Climate Change & Mortality Challenge (East Africa)
 
 [![Zindi Score](https://img.shields.io/badge/Zindi-Score_0.8328-gold)](https://zindi.africa/competitions/climate-change-impact-on-mortality)
-[![Rank](https://img.shields.io/badge/Rank-41-blue)](#)
+[![Rank](https://img.shields.io/badge/Rank-14-blue)](#)
 [![Team](https://img.shields.io/badge/Team-ITN_AI-green)](#)
 [![Country](https://img.shields.io/badge/🇧🇮-Burundi-red)](#)
 
@@ -249,4 +249,4 @@ python zindiclimate_top10_v3.py
 
 ---
 
-*Dernière mise à jour : Mars 2026 · Score : 0.8328 · Rang : 41*
+*Dernière mise à jour : Mars 2026 · Score : 0.8328 · Rang : 14*
