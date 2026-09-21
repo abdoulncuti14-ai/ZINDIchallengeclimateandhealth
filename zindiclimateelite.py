@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 import os
 import warnings
+import joblib
 warnings.filterwarnings('ignore')
 
 from xgboost import XGBClassifier
@@ -413,3 +414,117 @@ if __name__ == "__main__":
     print(f"\n   std={test_final.std():.4f}  "
           f"q10={np.quantile(test_final,0.1):.4f}  "
           f"q90={np.quantile(test_final,0.9):.4f}")
+
+    # ── SAUVEGARDE ARTEFACTS POUR INFÉRENCE HF ───────────────────
+    print("\n💾 Sauvegarde des artefacts pour déploiement...")
+    from sklearn.neighbors import KNeighborsRegressor
+    from sklearn.preprocessing import StandardScaler
+
+    train_fe = build_features(train)
+    test_fe  = build_features(test)
+    available = [f for f in BASE_FEATURES if f in train_fe.columns]
+    feature_medians = train_fe[available].median()
+
+    knn_imputers = {}
+    for col in ['ext_humidity', 'ext_pressure']:
+        knn = KNeighborsRegressor(n_neighbors=min(3, len(ext)), weights='distance')
+        knn.fit(ext[['latitude','longitude']].values, ext[col].values)
+        knn_imputers[col] = knn
+
+    all_coords = pd.concat([
+        train[['latitude','longitude']], test[['latitude','longitude']]
+    ]).drop_duplicates().values
+    scaler_geo = StandardScaler()
+    kmeans_geo = KMeans(n_clusters=8, random_state=42, n_init=10)
+    kmeans_geo.fit(scaler_geo.fit_transform(all_coords))
+
+    te_zone = target_encode(train_fe, train_fe, test_fe, 'zone', y, 15)[0]
+    te_geo  = target_encode(train_fe, train_fe, test_fe, 'geo_cluster', y, 10)[0]
+    te_year = target_encode(train_fe, train_fe, test_fe, 'year', y, 20)[0]
+    target_encoders = {
+        'zone': dict(zip(train_fe['zone'], te_zone)),
+        'geo_cluster': dict(zip(train_fe['geo_cluster'], te_geo)),
+        'year': dict(zip(train_fe['year'], te_year)),
+    }
+
+    train_fe['zone_risk'] = te_zone
+    train_fe['geo_cluster_risk'] = te_geo
+    train_fe['year_risk'] = te_year
+    global_mean = y.mean()
+
+    # Réentraîner les modèles finaux sur tout le train
+    print("🤖 Réentraînement final sur train complet...")
+    X_all = train_fe[available].fillna(feature_medians)
+    spw = float((y==0).sum()) / float((y==1).sum())
+
+    m1 = XGBClassifier(
+        n_estimators=10000, learning_rate=0.001,
+        max_depth=6, subsample=0.8,
+        colsample_bytree=0.75, colsample_bylevel=0.75,
+        min_child_weight=15, gamma=0.3, reg_alpha=0.3, reg_lambda=4.0,
+        scale_pos_weight=spw, eval_metric='auc',
+        early_stopping_rounds=200, random_state=42,
+        tree_method='hist', verbosity=0
+    )
+    m2 = LGBMClassifier(
+        n_estimators=5000, learning_rate=0.004,
+        num_leaves=95, max_depth=8,
+        subsample=0.8, colsample_bytree=0.75,
+        min_child_samples=15, reg_alpha=0.05, reg_lambda=1.0,
+        class_weight='balanced', verbosity=-1, random_state=42
+    )
+    m3 = CatBoostClassifier(
+        iterations=3000, learning_rate=0.01, depth=6,
+        l2_leaf_reg=5, auto_class_weights='Balanced',
+        eval_metric='AUC', early_stopping_rounds=150,
+        random_seed=42, verbose=0
+    )
+    m4 = ExtraTreesClassifier(
+        n_estimators=800, max_depth=None, min_samples_leaf=3,
+        class_weight='balanced', random_state=42, n_jobs=-1
+    )
+
+    m1.fit(X_all, y, eval_set=[(X_all, y)], verbose=False)
+    m2.fit(X_all, y, eval_set=[(X_all, y)],
+           callbacks=[lgb.early_stopping(150, verbose=False), lgb.log_evaluation(-1)])
+    m3.fit(X_all, y, eval_set=(X_all, y))
+    m4.fit(X_all, y)
+
+    # StackNet sur OOF du train complet (approximation par CV 5-fold)
+    meta_train = np.column_stack([
+        m1.predict_proba(X_all)[:,1],
+        m2.predict_proba(X_all)[:,1],
+        m3.predict_proba(X_all)[:,1],
+        m4.predict_proba(X_all)[:,1],
+    ])
+    meta_oof = np.zeros(len(y))
+    for _, (tr2, val2) in enumerate(StratifiedKFold(5, shuffle=True, random_state=123).split(meta_train, y)):
+        lr = LogisticRegression(C=1.0, class_weight='balanced', max_iter=1000)
+        lr.fit(meta_train[tr2], y.iloc[tr2])
+        meta_oof[val2] = lr.predict_proba(meta_train[val2])[:,1]
+    auc_blend_save = roc_auc_score(y, oof_final)
+    use_stacknet = roc_auc_score(y, meta_oof) > auc_blend_save
+    meta_model = LogisticRegression(C=1.0, class_weight='balanced', max_iter=1000)
+    meta_model.fit(meta_train, y)
+
+    iso_final = IsotonicRegression(out_of_bounds='clip')
+    iso_final.fit(oof_final, y.values)
+
+    artifacts = {
+        'models': {
+            'xgb': m1, 'lgbm': m2, 'cat': m3, 'et': m4,
+        },
+        'meta_model': meta_model,
+        'iso_calibrator': iso_final,
+        'knn_imputer': knn_imputers,
+        'kmeans_geo': kmeans_geo,
+        'scaler_geo': scaler_geo,
+        'target_encoders': target_encoders,
+        'feature_medians': feature_medians,
+        'BASE_FEATURES': BASE_FEATURES,
+        'best_thr': best_thr,
+        'global_mean': global_mean,
+        'use_stacknet': bool(use_stacknet),
+    }
+    joblib.dump(artifacts, 'model_artifacts.pkl', compress=3)
+    print("✅ Artefacts sauvegardés dans 'model_artifacts.pkl'")
