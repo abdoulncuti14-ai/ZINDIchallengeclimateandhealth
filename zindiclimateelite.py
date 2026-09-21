@@ -422,8 +422,6 @@ if __name__ == "__main__":
 
     train_fe = build_features(train)
     test_fe  = build_features(test)
-    available = [f for f in BASE_FEATURES if f in train_fe.columns]
-    feature_medians = train_fe[available].median()
 
     knn_imputers = {}
     for col in ['ext_humidity', 'ext_pressure']:
@@ -450,6 +448,8 @@ if __name__ == "__main__":
     train_fe['zone_risk'] = te_zone
     train_fe['geo_cluster_risk'] = te_geo
     train_fe['year_risk'] = te_year
+    available = [f for f in BASE_FEATURES if f in train_fe.columns]
+    feature_medians = train_fe[available].median()
     global_mean = y.mean()
 
     # Réentraîner les modèles finaux sur tout le train
