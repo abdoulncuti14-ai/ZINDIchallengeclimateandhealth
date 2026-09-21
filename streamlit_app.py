@@ -149,6 +149,18 @@ def fetch_openmeteo(latitude, longitude, deathdate):
 
 def predict_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    required = [
+        "age","gender","zone","deathdate","latitude","longitude",
+        "avg_temperature","max_temperature","min_temperature","precipitation",
+        "elevation","slope","hot_days_30d","max_daily_rain_30d",
+        "rain_sum_7d","rain_sum_30d","rain_sum_90d","rain_days_30d",
+        "tavg_7d","tavg_30d","tavg_90d","tmax_30d","tmin_30d",
+        "ndvi_30d","ndvi_90d","temp_range_mean_30d",
+    ]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        raise ValueError(f"Colonnes manquantes dans le CSV: {missing}")
+
     for col in ["ext_humidity", "ext_pressure"]:
         if col not in df.columns or df[col].isna().any():
             df[col] = knn_imputers[col].predict(df[["latitude", "longitude"]].values)
