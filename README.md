@@ -3,9 +3,9 @@ title: "Zindi Climate & Health Predictor"
 emoji: "🌍"
 colorFrom: green
 colorTo: blue
-sdk: gradio
-sdk_version: 4.44.0
-app_file: app.py
+sdk: streamlit
+sdk_version: 1.30
+app_file: streamlit_app.py
 pinned: false
 license: mit
 ---
@@ -18,21 +18,20 @@ Modèle de prédiction de la sensibilité climatique des décès en Afrique de l
 - **Score** : 0.8328 (Rank 41)
 - **Architecture** : Stacking + Pseudo-labeling (XGB + LGBM + CAT + ET)
 
-## Utilisation
-
-### Prédiction unitaire
-Entrez les informations du cas (âge, localisation, date, climat) et obtenez une probabilité de sensibilité climatique.  
-L'application récupère automatiquement l'humidité et la pression via Open-Meteo.
-
-### Prédiction batch
-Chargez un CSV au format du test set et téléchargez les prédictions.
-
 ## Déploiement
 
-1. Entraîner localement : `python zindiclimateelite.py`
-2. Copier `model_artifacts.pkl` dans ce repo
-3. Push sur Hugging Face Spaces
+### Streamlit Community Cloud
+1. Aller sur https://streamlit.io/cloud
+2. Connecter le repo GitHub `abdoulncuti14-ai/ZINDIchallengeclimateandhealth`
+3. Main file : `streamlit_app.py`
+4. Cliquer sur **Deploy**
+
+### Hugging Face Spaces
+1. Créer un Space avec SDK Gradio
+2. Connecter le repo GitHub
+3. Utiliser `app.py` comme fichier principal
 
 ## Dependencies
 
-Voir `requirements_hf.txt`
+- `requirements_streamlit.txt` pour Streamlit Cloud
+- `requirements_hf.txt` pour Hugging Face Spaces
